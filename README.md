@@ -10,6 +10,7 @@ This repository contains the fundamental engine, research test suite, and visual
 
 * **`engine/`**: Core axiomatic system implementing deterministic synthesis with five foundational axioms: Identity, Nontriviality, Synthesis, Symmetry, and Irreflexivity.
 * **`tests/`**: Research test suite designed to falsify claims regarding emergent geometry, causal time, topological forces, and information dynamics.
+* **`experiments/`**: Demonstrations of practical applications built on validated engine properties.
 * **`visuals/`**: 3D force-directed visualization tools for rendering graph state and emergent properties.
 
 ## Quick Start
@@ -106,6 +107,9 @@ This runs all tests and validates code before pushing. Use this locally to ensur
 - `test_biology.py`: Structural replication dynamics
 - `test_chemistry.py`: Atomic emergence
 - `test_consciousness.py`: Binding events and integration
+- `test_canonical_form.py`: Path-independent structural identity
+- `test_isomorphism.py`: Language-independent semantic topology
+- `test_quantum_braiding.py`: Path-dependent topological memory
 - `test_example.py`: Template for writing new tests
 
 ## Visualization
@@ -122,6 +126,17 @@ This executes local synthesis evolution, calculates emergent properties (age, co
 - Node color: Emergent age (causal distance from origin)
 - Node size: Coherence (clustering coefficient)
 - Spatial layout: Force-directed positioning based on graph topology
+
+## Experiments
+
+Demonstrations of practical applications:
+
+```bash
+python experiments/translation_demo.py
+```
+
+**Available experiments:**
+- `translation_demo.py`: Automatic structural equivalence detection across symbolic systems. Demonstrates zero-shot semantic mapping via topological identity matching.
 
 ## Theoretical Framework
 
