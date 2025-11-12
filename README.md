@@ -93,6 +93,8 @@ python -m pytest tests/ -n auto
 - `test_physics.py`: Force-state correlation
 - `test_forces.py`: Cross-subprocess interaction dynamics
 - `test_information.py`: Information coupling across subprocesses
+- `test_integration.py`: Small-world integration and topological distance
+- `test_robustness.py`: Scale-free topology and hub vulnerability
 - `test_research.py`: Self-organization and complexity
 - `test_biology.py`: Structural replication dynamics
 - `test_chemistry.py`: Atomic emergence
