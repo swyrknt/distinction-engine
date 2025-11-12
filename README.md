@@ -84,6 +84,13 @@ python -m pytest tests/ -k "time or space" -v
 python -m pytest tests/ -n auto
 ```
 
+**Pre-push validation:**
+```bash
+python tools/status_check.py
+```
+
+This runs all tests and validates code before pushing. Use this locally to ensure your changes pass CI checks.
+
 **Available test modules:**
 - `test_distinction.py`: Core axiomatic validation
 - `test_dynamics.py`: Subprocess dynamics and coherence
@@ -99,6 +106,7 @@ python -m pytest tests/ -n auto
 - `test_biology.py`: Structural replication dynamics
 - `test_chemistry.py`: Atomic emergence
 - `test_consciousness.py`: Binding events and integration
+- `test_example.py`: Template for writing new tests
 
 ## Visualization
 
@@ -131,6 +139,16 @@ The engine implements Distinction Process Theory, where physical laws emerge as 
 3. Synthesis: Two distinctions combine deterministically to create a third
 4. Symmetry: Relationships are bidirectional and order-independent
 5. Irreflexivity: A distinction synthesized with itself yields itself
+
+## Contributing
+
+Contributions are welcome. Please review the following documentation before submitting:
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Development workflow, testing guidelines, and pull request process
+- **[COMMENTING_STANDARD.md](COMMENTING_STANDARD.md)**: Code documentation standards and style guide
+- **[TESTING_STANDARD.md](TESTING_STANDARD.md)**: Falsification methodology and test design principles
+
+For writing new tests, refer to `tests/test_example.py` as a template.
 
 ## License
 
