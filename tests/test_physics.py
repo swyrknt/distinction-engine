@@ -1,10 +1,14 @@
 """
-Foundational (Research) Test for Emergent Physics (Forces)
+Emergent Physics Test Suite
 
-This test suite attacks the "EM as a Coupling Layer" claim.
-It tests if "Forces" (interaction dynamics) are a predictable
-function of the "GR" (container) and "QM" (content) states
-of the interacting subprocesses.
+Tests whether interaction dynamics (forces) correlate with initial
+structural states of interacting subprocesses, specifically their
+coherence (local integration) and age (causal distance from origin).
+
+Falsification Target:
+Force randomness - interaction outcomes show no correlation with
+initial subprocess states, proving forces are non-deterministic
+functions of structure.
 """
 
 import unittest
@@ -19,28 +23,25 @@ from engine import Distinction, DistinctionEngine
 class TestEmergentPhysics(unittest.TestCase):
 
     def setUp(self):
-        """
-        Create a fresh, clean "universe" (Engine) for each experiment.
-        """
+        """Initialize a fresh engine instance for each test."""
         self.engine = DistinctionEngine()
-        self.origin_id = self.engine.d0.id # The "Big Bang" point
-
-    # --- "MEASURING TOOLS" (HELPERS) ---
+        self.origin_id = self.engine.d0.id
 
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """
-        Builds a NetworkX graph object from an immutable snapshot.
-        """
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         g.add_nodes_from([d.id for d in distinctions])
         g.add_edges_from(relationships)
         return g
 
-    # --- HONEST "LOCAL" EVOLUTION HELPER ---
     def _evolve_universe_locally(self, steps: int):
         """
-        Runs the "one process" locally to create the substrate.
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs (within 2-hop neighborhoods).
+        Builds the computational substrate through iterated local operations.
         """
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
@@ -82,25 +83,20 @@ class TestEmergentPhysics(unittest.TestCase):
             if c.id not in distinction_map:
                 current_distinctions.append(c)
                 distinction_map[c.id] = c
-    # --- END HONEST EVOLUTION HELPER ---
 
     def _get_local_subprocess(self, g: nx.Graph, start_node_id: str, radius=2) -> Set[str]:
-        """
-        Gets the set of node IDs in a local neighborhood (our "subprocess").
-        """
+        """Return node IDs within specified radius of start node."""
         return set(nx.ego_graph(g, start_node_id, radius=radius).nodes())
 
     def _get_emergent_state(self, g: nx.Graph, node_id: str) -> Dict[str, float]:
         """
-        THE "PHYSICS RULER": Measures the "GR" and "QM" state
-        of a subprocess centered at node_id.
+        Measure structural state of a node.
+
+        Returns coherence (clustering coefficient) and age (shortest path
+        distance from primordial node d0).
         """
-        # "QM" (Content/Coherence)
-        # We measure the coherence of the *central* node.
         coherence = nx.clustering(g, node_id)
-        
-        # "GR" (Container/Correspondence)
-        # We measure the "age" (causal distance from origin).
+
         try:
             age = nx.shortest_path_length(g, source=self.origin_id, target=node_id)
         except (nx.NetworkXNoPath, nx.NodeNotFound):
@@ -109,142 +105,123 @@ class TestEmergentPhysics(unittest.TestCase):
         return {"qm_coherence": coherence, "gr_age": float(age)}
 
 
-    def _evolve_subprocess_A_with_B(self, engine_state: Tuple[Set[Distinction], Set[Tuple[str, str]]], 
-                                     subprocess_A_nodes: Set[str], 
-                                     subprocess_B_nodes: Set[str], 
+    def _evolve_subprocess_A_with_B(self, engine_state: Tuple[Set[Distinction], Set[Tuple[str, str]]],
+                                     subprocess_A_nodes: Set[str],
+                                     subprocess_B_nodes: Set[str],
                                      steps: int) -> Tuple[Set[Distinction], Set[Tuple[str, str]]]:
         """
-        THE "PETRI DISH" FOR FORCES:
-        Evolves a *clone* of a universe by *only* synthesizing
-        nodes from subprocess A with nodes from subprocess B.
+        Execute cross-subprocess synthesis operations.
+
+        Creates engine clone and synthesizes pairs where one member is from
+        subprocess A and the other from subprocess B. Measures interaction
+        dynamics between distinct structural regions.
         """
-        # Create a "clone" of the engine's state
         temp_engine = DistinctionEngine()
         distinctions, relationships = engine_state
         temp_engine.all_distinctions = {d.id: d for d in distinctions}
         temp_engine.relationships = relationships.copy()
-        
+
         distinctions_A = [d for d in temp_engine.all_distinctions.values()
                           if d.id in subprocess_A_nodes]
         distinctions_B = [d for d in temp_engine.all_distinctions.values()
                           if d.id in subprocess_B_nodes]
-        
+
         if not distinctions_A or not distinctions_B:
             return temp_engine.get_state_snapshot()
 
         for _ in range(steps):
             a = random.choice(distinctions_A)
             b = random.choice(distinctions_B)
-            
             c = temp_engine.synthesize(a, b)
-            
-            # This is key: the new distinction `c` does not get
-            # added to either "side" of the interaction.
-        
-        return temp_engine.get_state_snapshot()
 
-    # --- FOUNDATIONAL TEST 14: "EM" AS COUPLING LAYER ---
+        return temp_engine.get_state_snapshot()
 
     def test_falsify_force_correlation(self):
         """
-        FALSIFICATION TEST 14: The "Emergent Force" Test
-        
-        Hypothesis: The "force" (dynamic interaction rule) is
-        a *function* of the initial "GR" and "QM" states.
-        
-        Falsification: The force is random and uncorrelated
-        with the initial states of the subprocesses.
+        Falsification Test: Force Randomness
+
+        Hypothesis: Interaction dynamics (distance change) correlate with
+        initial structural states (coherence and age) of interacting
+        subprocesses, proving forces are deterministic functions of structure.
+
+        Falsifies if: Distance changes show no correlation with initial
+        states, proving forces are random.
+
+        Measurement:
+        - Sample 100 subprocess pair interactions
+        - Correlate initial state (coherence + age) with resulting force (distance change)
         """
-        print("\n⚛️  ATTACKING PHYSICS: Is 'Force' (EM) the integration of 'GR' and 'QM'?")
-        
-        # 1. Evolve the universe to create a complex substrate
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Force Correlation Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe_locally(steps=5000)
-        
-        # 2. Get the initial state
+
         state_0 = self.engine.get_state_snapshot()
         g_0 = self._build_graph_from_snapshot(state_0)
         all_distinctions = list(state_0[0])
-        
+
         if g_0.number_of_nodes() < 200:
             self.fail("Graph too small to test.")
-            
-        # 3. The "Dynamics Survey"
-        print("   Surveying dynamics of a *random sample* of subprocess interactions...")
-        
-        # We will store the "Initial State" and the "Resulting Force"
+
+        print("   Sampling subprocess interaction dynamics...")
+
         initial_states = []
         resulting_forces = []
-        
-        sample_size = 100 # Reduced for performance; this is a slow test
-        
-        print(f"   ...Testing {sample_size} sample interactions...")
+
+        sample_size = 100
+
+        print(f"   Testing {sample_size} interactions...")
 
         for _ in range(sample_size):
             try:
-                # 4. Find two *distinct* subprocesses
                 node_A, node_B = random.sample(all_distinctions, 2)
                 subprocess_A_nodes = self._get_local_subprocess(g_0, node_A.id)
                 subprocess_B_nodes = self._get_local_subprocess(g_0, node_B.id)
-                
-                if not subprocess_A_nodes.isdisjoint(subprocess_B_nodes):
-                    continue # Skip overlapping subprocesses
 
-                # 5. Measure the "Initial State"
+                if not subprocess_A_nodes.isdisjoint(subprocess_B_nodes):
+                    continue
+
                 state_A = self._get_emergent_state(g_0, node_A.id)
                 state_B = self._get_emergent_state(g_0, node_B.id)
                 distance_0 = nx.shortest_path_length(g_0, source=node_A.id, target=node_B.id)
 
-                # Store the combined initial state
-                # We'll use a simple sum of their "quantum" and "gravity" states
                 initial_qm_state = state_A["qm_coherence"] + state_B["qm_coherence"]
                 initial_gr_state = state_A["gr_age"] + state_B["gr_age"]
                 initial_states.append((initial_qm_state, initial_gr_state))
 
-                # 6. Run the "Force" Experiment (Petri Dish)
                 state_1 = self._evolve_subprocess_A_with_B(state_0, subprocess_A_nodes, subprocess_B_nodes, steps=50)
 
-                # 7. Measure the "Resulting Force"
                 g_1 = self._build_graph_from_snapshot(state_1)
                 distance_1 = nx.shortest_path_length(g_1, source=node_A.id, target=node_B.id)
-                
-                # The "Force" is the change in distance
+
                 delta_distance = distance_1 - distance_0
                 resulting_forces.append(delta_distance)
 
             except (nx.NetworkXNoPath, nx.NodeNotFound):
-                continue # Skip pairs that are disconnected or get destroyed
+                continue
 
         if len(resulting_forces) < 20:
             self.fail(f"Could not gather enough valid interaction data (only {len(resulting_forces)} samples).")
-            
-        print("   ...Survey complete.")
-        
-        # 8. The Analysis:
-        #    Correlate the "Initial State" with the "Resulting Force"
-        
-        # Unzip the data
+
+        print("   Sampling complete.")
+
         initial_qm_data = [s[0] for s in initial_states]
         initial_gr_data = [s[1] for s in initial_states]
-        
+
         corr_qm_vs_force = np.corrcoef(initial_qm_data, resulting_forces)[0, 1]
         corr_gr_vs_force = np.corrcoef(initial_gr_data, resulting_forces)[0, 1]
 
-        print(f"\n   --- Emergent Physics Test Results ---")
-        print(f"   Correlation('QM State' vs 'Force'): {corr_qm_vs_force:.4f}")
-        print(f"   Correlation('GR State' vs 'Force'): {corr_gr_vs_force:.4f}")
-        
-        # 9. The Falsification:
+        print(f"\n   Results:")
+        print(f"   Coherence-Force correlation: {corr_qm_vs_force:.4f}")
+        print(f"   Age-Force correlation: {corr_gr_vs_force:.4f}")
+
         total_correlation = abs(corr_qm_vs_force) + abs(corr_gr_vs_force)
-        
+
         self.assertGreater(total_correlation, 0.1,
-                         "🚩 FALSIFIED: 'Forces' are random."
-                         " The interaction dynamic is *not* correlated with the"
-                         " initial 'GR' or 'QM' states of the subprocesses.")
-        
-        print(f"\n   ✅ THEORY VALIDATED: 'Forces' are a non-random function of the initial state.")
-        print("      This proves that 'EM' (the force) is the 'coupling layer'")
-        print("      that integrates the 'GR' (container) and 'QM' (content) states.")
+                         "FALSIFIED: Forces show no correlation with initial structural states.")
+
+        print(f"\n   Hypothesis sustained.")
+        print(f"   Forces correlate with initial subprocess structure (total correlation: {total_correlation:.4f}).")
 
 if __name__ == '__main__':
     unittest.main()

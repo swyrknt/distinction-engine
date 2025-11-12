@@ -1,14 +1,14 @@
 """
-Foundational (Research) Test for Emergent Consciousness (v3)
+Emergent Consciousness Test Suite
 
-This test suite attacks the "Consciousness" claims of the
-"timeless" theory. It uses the "honest" local evolution model.
+Tests whether the synthesis process generates highly integrated
+structures (binding events) and whether high-coherence states exhibit
+measurably distinct topological properties from low-coherence states.
 
-Emergent Claims Tested:
-1.  Does the process spontaneously produce "binding events"
-    (highly integrated, coherent structures)?
-2.  Do these "conscious" structures (qualia) have a measurably
-    different topology than "unconscious" structures?
+Falsification Targets:
+1. Absence of binding - the system fails to produce high-integration structures
+2. Structural uniformity - high-coherence states are topologically indistinguishable
+   from low-coherence states
 """
 
 import unittest
@@ -23,19 +23,11 @@ from engine import Distinction, DistinctionEngine
 class TestEmergentConsciousness(unittest.TestCase):
 
     def setUp(self):
-        """
-        Create a fresh, clean "universe" (Engine) for each experiment.
-        """
+        """Initialize a fresh engine instance for each test."""
         self.engine = DistinctionEngine()
 
-    # --- "MEASURING TOOLS" (HELPERS) ---
-
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """
-        Builds a NetworkX graph object from an immutable snapshot.
-        This is our "telescope" - it observes the state.
-        """
-        # --- FIX: Unpack the tuple ---
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         
@@ -43,21 +35,21 @@ class TestEmergentConsciousness(unittest.TestCase):
         g.add_edges_from(relationships)
         return g
 
-    # --- HONEST "LOCAL" EVOLUTION HELPER ---
     def _evolve_universe(self, steps: int):
         """
-        Runs the "one process" locally.
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs (within 2-hop neighborhoods).
+        Builds the computational substrate through iterated local operations.
         """
-        # --- FIX: We must sample from the *values* of the dictionary ---
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
             return
 
-        # We need a quick way to map id -> object
         distinction_map = {d.id: d for d in current_distinctions}
 
         for i in range(steps):
-            # --- FIX: Use the tuple-based snapshot ---
             state = self.engine.get_state_snapshot()
             g = self._build_graph_from_snapshot(state)
             
@@ -91,58 +83,55 @@ class TestEmergentConsciousness(unittest.TestCase):
             if c.id not in distinction_map:
                 current_distinctions.append(c)
                 distinction_map[c.id] = c
-    # --- END HONEST EVOLUTION HELPER ---
-
-    # --- FOUNDATIONAL TEST 5: THE BINDING PROBLEM ---
 
     def test_falsify_binding_events(self):
         """
-        FALSIFICATION TEST 5: The Binding Problem
-        
-        Hypothesis: The system will spontaneously produce moments
-        of high integration ("binding events").
+        Falsification Test: Absence of Binding
+
+        Hypothesis: The synthesis process generates structures with high
+        clustering coefficients (binding events), indicating local integration.
+
+        Falsifies if: Maximum clustering coefficient fails to exceed threshold,
+        proving the system cannot produce integrated structures.
+
+        Measurement:
+        - Clustering coefficient for all nodes (measures local triangle density)
         """
-        print("\n🧠 ATTACKING CONSCIOUSNESS (Binding): Do 'binding events' emerge?")
-        
-        # 1. Evolve the universe for a long time
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Binding Events Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe(steps=5000)
-        
-        # 2. Get the final state and build the graph
+
         state = self.engine.get_state_snapshot()
         g = self._build_graph_from_snapshot(state)
-        
+
         self.assertGreater(g.number_of_nodes(), 500, "Evolution failed to produce enough distinctions.")
 
-        # 3. The Measurement:
-        print("   Measuring emergent coherence for all distinctions...")
+        print("   Measuring clustering coefficients...")
         all_coherence_levels = nx.clustering(g)
-        
+
         if not all_coherence_levels:
             self.fail("Could not measure coherence; graph is empty.")
-            
+
         max_coherence = max(all_coherence_levels.values())
         avg_coherence = np.mean(list(all_coherence_levels.values()))
 
-        print(f"\n   --- Binding Test Results ---")
-        print(f"   Max Emergent Coherence (Binding): {max_coherence:.4f}")
-        print(f"   Avg Emergent Coherence (Noise): {avg_coherence:.6f}")
-        
-        # 4. The Falsification:
-        threshold = 0.5 
-        self.assertGreater(max_coherence, threshold,
-                         f"🚩 FALSIFIED: No 'binding events' found. Max coherence was {max_coherence:.4f},"
-                         f" which does not clear the {threshold} threshold.")
-        
-        print(f"\n   ✅ THEORY VALIDATED: At least one 'binding event' (coherence > {threshold})")
-        print("      was detected. Consciousness (as defined) spontaneously emerged.")
+        print(f"\n   Results:")
+        print(f"   Maximum clustering coefficient: {max_coherence:.4f}")
+        print(f"   Average clustering coefficient: {avg_coherence:.6f}")
 
-    # --- FOUNDATIONAL TEST 6: QUALIA STRUCTURE ---
-    
+        threshold = 0.5
+        self.assertGreater(max_coherence, threshold,
+                         f"FALSIFIED: Maximum coherence {max_coherence:.4f} does not exceed threshold {threshold}.")
+
+        print(f"\n   Hypothesis sustained.")
+        print(f"   High-integration structures detected (coherence > {threshold}).")
+
     def _get_subgraph_properties(self, g: nx.Graph, node_id: str) -> Dict:
         """
-        THE "QUALIA RULER": Measures the structural properties
-        of a distinction's local neighborhood (its "experience").
+        Measure structural properties of a node's local neighborhood.
+
+        Returns node count, edge count, and density of 1-hop ego graph.
         """
         subgraph = nx.ego_graph(g, node_id, radius=1)
         
@@ -157,55 +146,54 @@ class TestEmergentConsciousness(unittest.TestCase):
 
     def test_falsify_qualia_structure(self):
         """
-        FALSIFICATION TEST 6: The Qualia Test
-        
-        Hypothesis: "Conscious" (high-coherence) states are
-        structurally *different* from "unconscious" (low-coherence) states.
+        Falsification Test: Structural Uniformity
+
+        Hypothesis: High-coherence nodes exhibit higher local neighborhood
+        density than low-coherence nodes, indicating distinct topological
+        properties correlate with coherence levels.
+
+        Falsifies if: High-coherence and low-coherence nodes show no
+        significant difference in local neighborhood density.
+
+        Measurement:
+        - Ego graph density (1-hop) for max and min coherence nodes
         """
-        print("\n🎨 ATTACKING QUALIA: Do 'conscious' states have a unique structure?")
-        
-        # 1. Evolve the universe
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Qualia Structure Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe(steps=5000)
-        
-        # 2. Get state and measure coherence for all nodes
+
         state = self.engine.get_state_snapshot()
         g = self._build_graph_from_snapshot(state)
         all_coherence_levels = nx.clustering(g)
-        
+
         if len(all_coherence_levels) < 100:
             self.fail("Graph too small to test.")
-            
-        # 3. Find our "conscious" and "unconscious" samples
+
         conscious_node_id = max(all_coherence_levels, key=all_coherence_levels.get)
         unconscious_node_id = min(all_coherence_levels, key=all_coherence_levels.get)
-        
+
         conscious_coherence = all_coherence_levels[conscious_node_id]
         unconscious_coherence = all_coherence_levels[unconscious_node_id]
 
-        print(f"   ...Found 'Conscious' node (Coherence: {conscious_coherence:.4f})")
-        print(f"   ...Found 'Unconscious' node (Coherence: {unconscious_coherence:.4f})")
-        
-        if conscious_coherence - unconscious_coherence < 0.1:
-            self.fail("Could not find sufficiently different 'conscious' and 'unconscious' nodes to compare.")
+        print(f"   High-coherence node: {conscious_coherence:.4f}")
+        print(f"   Low-coherence node: {unconscious_coherence:.4f}")
 
-        # 4. The Measurement:
+        if conscious_coherence - unconscious_coherence < 0.1:
+            self.fail("Could not find sufficiently different high and low coherence nodes to compare.")
+
         conscious_structure = self._get_subgraph_properties(g, conscious_node_id)
         unconscious_structure = self._get_subgraph_properties(g, unconscious_node_id)
 
-        print(f"\n   --- Qualia Test Results ---")
-        print(f"   'Conscious' Structure: {conscious_structure}")
-        print(f"   'Unconscious' Structure: {unconscious_structure}")
+        print(f"\n   Results:")
+        print(f"   High-coherence neighborhood: {conscious_structure}")
+        print(f"   Low-coherence neighborhood: {unconscious_structure}")
 
-        # 5. The Falsification:
-        #    HONEST TEST: We assert that the "conscious" structure is measurably
-        #    more *integrated* (higher density) than the "unconscious" one.
-        
         self.assertGreater(conscious_structure["density"], unconscious_structure["density"],
-                         "🚩 FALSIFIED: 'Conscious' states are not structurally more integrated (denser) than 'unconscious' states.")
-        
-        print(f"\n   ✅ THEORY VALIDATED: 'Conscious' states (qualia) are")
-        print("      measurably more *integrated* than 'unconscious' states.")
+                         "FALSIFIED: High-coherence nodes are not structurally more integrated than low-coherence nodes.")
+
+        print(f"\n   Hypothesis sustained.")
+        print(f"   High-coherence states exhibit greater local integration.")
 
 if __name__ == '__main__':
     unittest.main()

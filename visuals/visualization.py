@@ -1,3 +1,11 @@
+"""
+3D Force-Directed Visualization
+
+Renders the distinction graph using force-directed layout with emergent
+properties (age, coherence, usage) mapped to visual attributes. Spatial
+positions emerge from graph connectivity through spring layout algorithm.
+"""
+
 import networkx as nx
 import numpy as np
 import random
@@ -7,13 +15,21 @@ from engine import Distinction, DistinctionEngine
 
 
 class UniverseVisualizer:
+    """
+    3D visualization engine for distinction graphs.
+
+    Executes local synthesis evolution and renders the resulting graph using
+    force-directed layout. Emergent properties are calculated from graph
+    topology and mapped to visual attributes.
+    """
+
     def __init__(self, engine: DistinctionEngine):
         self.engine = engine
         self.origin_id = self.engine.d0.id
-        self.graph = None 
+        self.graph = None
 
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """Builds a NetworkX graph object from an immutable snapshot."""
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         g.add_nodes_from([d.id for d in distinctions])
@@ -21,7 +37,12 @@ class UniverseVisualizer:
         return g
 
     def _evolve_universe_locally(self, steps: int):
-        """Runs the "one process" locally to create the substrate."""
+        """
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs within 2-hop neighborhoods.
+        """
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
             return
@@ -68,7 +89,13 @@ class UniverseVisualizer:
 
 
     def _calculate_emergent_properties(self) -> Dict[str, Dict[str, float]]:
-        """Calculates emergent properties (Coherence, Usage, Age) for all nodes."""
+        """
+        Calculate emergent properties for all nodes.
+
+        Returns dictionary mapping node IDs to their coherence (clustering
+        coefficient), usage (normalized degree), and age (normalized path
+        distance from origin).
+        """
         if not self.graph:
             raise ValueError("Graph not built. Run _evolve_universe_locally first.")
 
@@ -107,64 +134,53 @@ class UniverseVisualizer:
 
     def visualize_emergent_space(self, evolution_steps: int = 10000, output_html_file: str = "emergent_universe_spatial_view.html"):
         """
-        Evolves the universe and visualizes it in a 3D emergent space.
-        Uses a force-directed layout, fixing the origin node at (0,0,0).
-        
-        Node Color: Emergent Age (normalized causal distance from origin d0)
-        Node Size: Emergent Coherence (normalized local clustering coefficient)
+        Generate 3D force-directed visualization of distinction graph.
+
+        Executes local synthesis evolution, calculates emergent properties,
+        and renders interactive HTML visualization using Plotly. Origin node
+        is fixed at coordinates (0,0,0). Node color represents age, node size
+        represents coherence. Spatial positions emerge from graph connectivity.
         """
-        print(f"🌌 Evolving universe for {evolution_steps} steps to generate complex structure...")
+        print(f"Executing {evolution_steps} synthesis operations...")
         self._evolve_universe_locally(evolution_steps)
-        
+
         if not self.engine.all_distinctions or self.graph.number_of_nodes() < 2:
-            print("Not enough distinctions or graph is too small to visualize effectively.")
+            print("Graph too small to visualize.")
             return
 
-        print("✨ Calculating emergent properties (Age, Coherence, Usage)...")
+        print("Calculating emergent properties...")
         node_properties = self._calculate_emergent_properties()
 
-        print("🔮 Generating force-directed 3D layout (this may take a moment for large graphs)...")
-        # Fix the origin_id (d0) at the center (0,0,0)
+        print("Generating 3D force-directed layout...")
         fixed_pos = {self.origin_id: [0, 0, 0]}
-        
-        # Use Fruchterman-Reingold for 3D layout
-        # This simulates attractive/repulsive forces based on connections
         pos = nx.spring_layout(self.graph, dim=3, iterations=100, pos=fixed_pos, fixed=[self.origin_id])
-
 
         x_coords = []
         y_coords = []
         z_coords = []
-        node_colors = [] # Based on Age
-        node_sizes = []  # Based on Coherence
-        node_texts = []  # Hover text
-        
-        # Collect data for plotting
+        node_colors = []
+        node_sizes = []
+        node_texts = []
         for node_id, props in node_properties.items():
             if node_id in pos:
                 x_coords.append(pos[node_id][0])
                 y_coords.append(pos[node_id][1])
                 z_coords.append(pos[node_id][2])
-                
-                # Color by Age (GR)
-                node_colors.append(props["age"]) 
-                # Size by Coherence (QM)
-                node_sizes.append(max(3, props["coherence"] * 30)) # Scale for visibility
-                
+
+                node_colors.append(props["age"])
+                node_sizes.append(max(3, props["coherence"] * 30))
+
                 node_texts.append(f"ID: {node_id[:8]}<br>Age: {props['age']:.2f}<br>Coherence: {props['coherence']:.2f}<br>Usage: {props['usage']:.2f}")
 
-        # Create edges for visualization
         edge_x = []
         edge_y = []
         edge_z = []
         for edge in self.graph.edges():
             id1, id2 = edge
-            if id1 in pos and id2 in pos: # Ensure both nodes are in the layout
+            if id1 in pos and id2 in pos:
                 edge_x.extend([pos[id1][0], pos[id2][0], None])
                 edge_y.extend([pos[id1][1], pos[id2][1], None])
                 edge_z.extend([pos[id1][2], pos[id2][2], None])
-
-        # Plotly Trace for Edges
         edges_trace = go.Scatter3d(
             x=edge_x, y=edge_y, z=edge_z,
             mode='lines',
@@ -173,7 +189,6 @@ class UniverseVisualizer:
             showlegend=False
         )
 
-        # Plotly Trace for Nodes
         nodes_trace = go.Scatter3d(
             x=x_coords, y=y_coords, z=z_coords,
             mode='markers',
@@ -181,8 +196,8 @@ class UniverseVisualizer:
                 symbol='circle',
                 size=node_sizes,
                 color=node_colors,
-                colorscale='Plasma', # Good for showing gradients from origin (dark/purple) to outer (yellow)
-                colorbar=dict(title='Emergent Age (GR)', thickness=20),
+                colorscale='Plasma',
+                colorbar=dict(title='Emergent Age', thickness=20),
                 line=dict(color='black', width=0),
                 opacity=0.8
             ),
@@ -191,10 +206,8 @@ class UniverseVisualizer:
             showlegend=False
         )
 
-        # Create the figure
         fig = go.Figure(data=[edges_trace, nodes_trace])
 
-        # Customize layout
         fig.update_layout(
             title=f"Emergent Universe: Spatial View (Nodes: {len(node_properties)})",
             scene=dict(
@@ -202,20 +215,20 @@ class UniverseVisualizer:
                 yaxis_title="Emergent Y (Arbitrary)",
                 zaxis_title="Emergent Z (Arbitrary)",
                 bgcolor='black',
-                xaxis=dict(showgrid=False, zeroline=False), # No grid to emphasize emergent space
+                xaxis=dict(showgrid=False, zeroline=False),
                 yaxis=dict(showgrid=False, zeroline=False),
                 zaxis=dict(showgrid=False, zeroline=False),
             ),
             margin=dict(l=0, r=0, b=0, t=40),
             hovermode='closest'
         )
-        
+
         fig.write_html(output_html_file, auto_open=True)
-        print(f"Visualization saved to {output_html_file} and opened in your browser.")
-        print("💡 **Central Node (Origin d0)** is fixed at (0,0,0).")
-        print("💡 **Node Color represents Emergent Age (GR)**: Darker (purple) = Older, Lighter (yellow) = Younger.")
-        print("💡 **Node Size represents Emergent Coherence (QM)**: Larger = More Structured/Complex.")
-        print("💡 The spatial layout emerges from the graph's internal connectivity.")
+        print(f"Visualization saved to {output_html_file}")
+        print("Origin node fixed at (0,0,0).")
+        print("Node color: age (darker = older, lighter = younger).")
+        print("Node size: coherence (larger = more structured).")
+        print("Spatial layout emerges from graph connectivity.")
 
 
 if __name__ == '__main__':

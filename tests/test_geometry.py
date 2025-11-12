@@ -1,12 +1,14 @@
 """
-Foundational (Research) Test for Emergent Geometry (v2)
+Emergent Geometry Test Suite
 
-This test suite attacks the "Spacetime" claim of the "timeless"
-theory. It uses the "honest" local evolution model.
+Tests whether the synthesis process generates stable, low-dimensional
+geometric structure by measuring fractal (Hausdorff) dimension of the
+resulting graph.
 
-Emergent Claim Tested:
-1.  Does the local process spontaneously create a stable,
-    low-dimensional geometric structure (i.e., "Space")?
+Falsification Targets:
+1. Dimensional instability - fractal dimension exhibits high variance
+2. Trivial dimensionality - structure is essentially 1-dimensional
+3. High dimensionality - structure lacks geometric coherence (hairball)
 """
 
 import unittest
@@ -21,27 +23,24 @@ from engine import Distinction, DistinctionEngine
 class TestEmergentGeometry(unittest.TestCase):
 
     def setUp(self):
-        """
-        Create a fresh, clean "universe" (Engine) for each experiment.
-        """
+        """Initialize a fresh engine instance for each test."""
         self.engine = DistinctionEngine()
 
-    # --- "MEASURING TOOLS" (HELPERS) ---
-
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """
-        Builds a NetworkX graph object from an immutable snapshot.
-        """
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         g.add_nodes_from([d.id for d in distinctions])
         g.add_edges_from(relationships)
         return g
 
-    # --- HONEST "LOCAL" EVOLUTION HELPER ---
     def _evolve_universe(self, steps: int):
         """
-        Runs the "one process" locally.
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs (within 2-hop neighborhoods).
+        Builds the computational substrate through iterated local operations.
         """
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
@@ -83,16 +82,16 @@ class TestEmergentGeometry(unittest.TestCase):
             if c.id not in distinction_map:
                 current_distinctions.append(c)
                 distinction_map[c.id] = c
-    # --- END HONEST EVOLUTION HELPER ---
 
     def _get_emergent_dimensionality(self, g: nx.Graph, samples=30, max_radius=5) -> Tuple[float, float]:
         """
-        THE "GEOMETRY RULER": Measures the fractal (Hausdorff) dimension
-        of the graph by measuring how fast the "volume" of
-        neighborhoods grows with their "radius".
+        Estimate fractal (Hausdorff) dimension via volume-radius scaling.
+
+        Measures how neighborhood volume scales with radius. Returns mean
+        dimension and standard deviation across sampled nodes.
         """
         if g.number_of_nodes() < samples * max_radius:
-            return 0.0, 0.0 # Graph is too small to measure
+            return 0.0, 0.0
 
         dimensions = []
         node_list = list(g.nodes())
@@ -132,51 +131,49 @@ class TestEmergentGeometry(unittest.TestCase):
             
         return np.mean(dimensions), np.std(dimensions)
 
-    # --- FOUNDATIONAL TEST 4: EMERGENT GEOMETRY ---
-
     def test_falsify_emergent_dimensionality(self):
         """
-        FALSIFICATION TEST 4: The Geometry Test
-        
-        Hypothesis: The simple, *local* axiomatic process will
-        evolve into a stable, low-dimensional geometric structure.
+        Falsification Test: Emergent Geometry
+
+        Hypothesis: The synthesis process generates stable, low-dimensional
+        geometric structure with fractal dimension between 1.5 and 8.0.
+
+        Falsifies if:
+        - Dimension exhibits high variance (instability)
+        - Dimension is trivial (≤ 1.5, essentially linear)
+        - Dimension is too high (≥ 8.0, lacks geometric coherence)
+
+        Measurement:
+        - Fractal dimension via volume-radius scaling across sampled nodes
         """
-        print("\n🌌 ATTACKING SPACETIME: Does a stable dimension emerge?")
-        
-        # 1. Evolve the universe for a *long* time locally.
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Emergent Dimensionality Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe(steps=5000)
-        
-        # 2. Get the final state
+
         state = self.engine.get_state_snapshot()
         g = self._build_graph_from_snapshot(state)
-        
+
         self.assertGreater(g.number_of_nodes(), 500, "Evolution failed to produce enough distinctions.")
 
-        # 3. The Measurement:
-        print("   Measuring emergent fractal dimension...")
+        print("   Measuring fractal dimension...")
         avg_dim, std_dev_dim = self._get_emergent_dimensionality(g)
-        
-        print(f"\n   --- Emergent Geometry Test Results ---")
-        print(f"   Average Dimension: {avg_dim:.3f}")
-        print(f"   Dimension Stability (std dev): {std_dev_dim:.3f}")
-        
-        # 4. The Falsification:
-        
-        #   Falsification A: Is the dimension unstable?
+
+        print(f"\n   Results:")
+        print(f"   Average dimension: {avg_dim:.3f}")
+        print(f"   Standard deviation: {std_dev_dim:.3f}")
+
         self.assertLess(std_dev_dim, 1.0,
-                         "🚩 FALSIFIED: Dimensionality is unstable and fluctuates wildly.")
+                         "FALSIFIED: Dimensionality is unstable (high variance).")
 
-        #   Falsification B: Is the dimension trivial (just a 1D chain)?
         self.assertGreater(avg_dim, 1.5,
-                         "🚩 FALSIFIED: Dimensionality is trivial (avg dim <= 1.5).")
+                         "FALSIFIED: Dimensionality is trivial (≤ 1.5).")
 
-        #   Falsification C: Is the dimension a "hairball" (not low-D)?
         self.assertLess(avg_dim, 8.0,
-                         "🚩 FALSIFIED: Dimension is not 'low' (avg dim >= 8.0). It's a high-D 'hairball'.")
-        
-        print("\n   ✅ THEORY VALIDATED: A stable, non-trivial, low-dimensional")
-        print("      geometric structure spontaneously emerged from the process.")
+                         "FALSIFIED: Dimensionality is too high (≥ 8.0).")
+
+        print("\n   Hypothesis sustained.")
+        print("   Stable, low-dimensional geometric structure detected.")
 
 if __name__ == '__main__':
     unittest.main()

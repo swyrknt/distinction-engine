@@ -1,14 +1,14 @@
 """
-Foundational (Research) Test for Emergent "Biology"
+Emergent Biology Test Suite
 
-This test suite attacks the "Coding Law" claim of the theory.
-It tests for the fundamental *structural prerequisites* of
-"life" (a "genome").
+Tests whether the distinction graph exhibits structural diversity necessary
+for life-like computation. Specifically validates that both chain-like
+structures (information storage) and clump-like structures (catalytic action)
+emerge from the synthesis process.
 
-Emergent Claim Tested:
-1.  Is the "primordial soup" (the graph) complex enough
-    to support *both* "chain-like" (information storage)
-    and "clump-like" (catalytic) structures?
+Falsification Target:
+Structural sterility - the system produces only one type of topological
+structure, preventing the emergence of genome-like computational substrates.
 """
 
 import unittest
@@ -23,27 +23,24 @@ from engine import Distinction, DistinctionEngine
 class TestEmergentBiology(unittest.TestCase):
 
     def setUp(self):
-        """
-        Create a fresh, clean "universe" (Engine) for each experiment.
-        """
+        """Initialize a fresh engine instance for each test."""
         self.engine = DistinctionEngine()
 
-    # --- "MEASURING TOOLS" (HELPERS) ---
-
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """
-        Builds a NetworkX graph object from an immutable snapshot.
-        """
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         g.add_nodes_from([d.id for d in distinctions])
         g.add_edges_from(relationships)
         return g
 
-    # --- HONEST "LOCAL" EVOLUTION HELPER ---
     def _evolve_universe_locally(self, steps: int):
         """
-        Runs the "one process" locally to create the substrate.
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs (within 2-hop neighborhoods).
+        Builds the computational substrate through iterated local operations.
         """
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
@@ -85,77 +82,63 @@ class TestEmergentBiology(unittest.TestCase):
             if c.id not in distinction_map:
                 current_distinctions.append(c)
                 distinction_map[c.id] = c
-    # --- END HONEST EVOLUTION HELPER ---
-
-
-    # --- FOUNDATIONAL TEST 14: "GENOME" PREREQUISITES ---
 
     def test_falsify_structural_sterility(self):
         """
-        FALSIFICATION TEST 14: The "Genome" Test
-        
-        Hypothesis: The process creates a "primordial soup" rich
-        enough for "life," meaning it produces *both* "clumps"
-        (for catalytic action) and "chains" (for information storage).
-        
-        Falsification: The universe is "sterile"—it only
-        produces one type of structure.
+        Falsification Test: Structural Sterility
+
+        Hypothesis: The synthesis process generates topologically diverse
+        structures including both high-clustering regions (catalytic sites)
+        and extended path structures (information chains).
+
+        Falsifies if: The graph exhibits only one structural motif (all gas,
+        all clump, or all chain), preventing genome-like computation.
+
+        Measurements:
+        - Average clustering coefficient (clumpiness)
+        - Average shortest path length (chain-like extent)
         """
-        print("\n🧬 ATTACKING BIOLOGY: Does a 'primordial soup' for 'life' emerge?")
-        
-        # 1. Evolve the universe
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Structural Sterility Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe_locally(steps=5000)
-        
-        # 2. Get the final state
+
         state = self.engine.get_state_snapshot()
         g = self._build_graph_from_snapshot(state)
-        
+
         if not nx.is_connected(g):
-            # If the graph is not one "universe," our rulers won't work.
-            # We can take the largest connected component.
             largest_cc_nodes = max(nx.connected_components(g), key=len)
             g = g.subgraph(largest_cc_nodes)
-            print("   ...Graph is not fully connected. Analyzing largest component.")
-        
+            print("   Graph disconnected. Analyzing largest connected component.")
+
         if g.number_of_nodes() < 500:
             self.fail("Evolution failed to produce a large enough connected universe.")
-            
-        # 3. The "Rulers"
-        print("   Measuring structural properties of the soup...")
-        
-        # Ruler 1: "Clumps" (for Catalysis)
-        # We use the Average Clustering Coefficient (Coherence).
-        # A high value means the graph is "clumpy."
+
+        print("   Measuring topological properties...")
+
+        # Average clustering coefficient measures local density (clumpiness)
         emergent_coherence = nx.average_clustering(g)
-        
-        # Ruler 2: "Chains" (for Information Storage)
-        # We use the Average Shortest Path Length.
-        # A high value means the graph is "stringy" and "chain-like."
+
+        # Average shortest path length measures topological extent (chain-like structure)
         avg_path_length = nx.average_shortest_path_length(g)
 
-        print(f"\n   --- Emergent Biology Test Results ---")
-        print(f"   'Clumpiness' (Avg. Coherence): {emergent_coherence:.4f}")
-        print(f"   'Stringiness' (Avg. Path Length): {avg_path_length:.4f}")
+        print(f"\n   Results:")
+        print(f"   Average Clustering Coefficient: {emergent_coherence:.4f}")
+        print(f"   Average Shortest Path Length: {avg_path_length:.4f}")
 
-        # 4. The Falsification:
-        
-        # Falsification A: Is the soup "all gas" (no clumps)?
-        # (We already proved this in test_chemistry.py, but we re-test)
+        # Verify presence of clump-like structures (catalytic sites)
         self.assertGreater(emergent_coherence, 0.01,
-                         f"🚩 FALSIFIED: The soup is 'all gas' (Coherence: {emergent_coherence:.4f})."
-                         " No 'clumps' for catalytic action found.")
-        
-        # Falsification B: Is the soup "all clump" (no chains)?
-        # A "clumpy" (small-world) graph would have a very low path length.
-        # We assert the path length is "non-trivial."
+                         f"FALSIFIED: Insufficient clustering (coherence: {emergent_coherence:.4f})."
+                         " Graph lacks clump-like structures necessary for catalytic action.")
+
+        # Verify presence of chain-like structures (information storage)
         self.assertGreater(avg_path_length, 3.0,
-                         f"🚩 FALSIFIED: The soup is 'all clump' (Path Length: {avg_path_length:.4f})."
-                         " No 'chains' for information storage found.")
-        
-        print(f"\n   ✅ THEORY VALIDATED: The 'primordial soup' is fertile.")
-        print(f"      The process creates *both* 'clumps' (Coherence > 0) *and* 'chains' (Path Length > 3).")
-        print(f"      This provides the necessary structural diversity for a 'genome'.")
+                         f"FALSIFIED: Insufficient path length ({avg_path_length:.4f})."
+                         " Graph lacks chain-like structures necessary for information storage.")
+
+        print(f"\n   Hypothesis sustained.")
+        print(f"   Graph exhibits both clustering (coherence > 0.01) and extended paths (length > 3.0).")
+        print(f"   Structural diversity sufficient for genome-like computation.")
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,13 +1,14 @@
 """
-Foundational (Research) Test for Emergent "Forces"
+Emergent Forces Test Suite
 
-This test suite attacks the "Forces" claim of the theory.
-It defines a "force" as the emergent dynamic (the "integration rule")
-that occurs when two distinct subprocesses interact.
+Tests whether interactions between distinct subprocesses produce
+measurable changes in topological distance, indicating non-trivial
+interaction dynamics between structural entities.
 
-Emergent Claim Tested:
-1.  Do distinct subprocesses (e.g., a "clump" and a "chain")
-    have a non-trivial, measurable interaction dynamic (a "force")?
+Falsification Target:
+Interaction neutrality - cross-subprocess synthesis produces no change
+in topological distance between subprocess centers, proving interactions
+lack directional dynamics.
 """
 
 import unittest
@@ -22,27 +23,24 @@ from engine import Distinction, DistinctionEngine
 class TestEmergentForces(unittest.TestCase):
 
     def setUp(self):
-        """
-        Create a fresh, clean "universe" (Engine) for each experiment.
-        """
+        """Initialize a fresh engine instance for each test."""
         self.engine = DistinctionEngine()
 
-    # --- "MEASURING TOOLS" (HELPERS) ---
-
     def _build_graph_from_snapshot(self, state: Tuple[Set[Distinction], Set[Tuple[str, str]]]) -> nx.Graph:
-        """
-        Builds a NetworkX graph object from an immutable snapshot.
-        """
+        """Convert engine state snapshot to NetworkX graph for analysis."""
         distinctions, relationships = state
         g = nx.Graph()
         g.add_nodes_from([d.id for d in distinctions])
         g.add_edges_from(relationships)
         return g
 
-    # --- HONEST "LOCAL" EVOLUTION HELPER ---
     def _evolve_universe_locally(self, steps: int):
         """
-        Runs the "one process" locally to create the substrate.
+        Execute synthesis operations with local selection bias.
+
+        Randomly selects pairs of distinctions for synthesis, with preference
+        for topologically proximate pairs (within 2-hop neighborhoods).
+        Builds the computational substrate through iterated local operations.
         """
         current_distinctions = list(self.engine.all_distinctions.values())
         if len(current_distinctions) < 2:
@@ -84,18 +82,16 @@ class TestEmergentForces(unittest.TestCase):
             if c.id not in distinction_map:
                 current_distinctions.append(c)
                 distinction_map[c.id] = c
-    # --- END HONEST EVOLUTION HELPER ---
 
     def _get_local_subprocess(self, g: nx.Graph, start_node_id: str, radius=2) -> Set[str]:
-        """
-        Gets the set of node IDs in a local neighborhood (our "subprocess").
-        """
+        """Return node IDs within specified radius of start node."""
         return set(nx.ego_graph(g, start_node_id, radius=radius).nodes())
 
     def _get_subprocess_coherence(self, g: nx.Graph, subprocess_nodes: Set[str]) -> float:
         """
-        Measures the *average* emergent coherence (clustering)
-        of a specific set of nodes (the subprocess).
+        Calculate average clustering coefficient for a set of nodes.
+
+        Returns mean coherence value across subprocess, or 0.0 if empty.
         """
         if not subprocess_nodes:
             return 0.0
@@ -110,133 +106,107 @@ class TestEmergentForces(unittest.TestCase):
             
         return np.mean(subprocess_coherence)
 
-    def _evolve_subprocess_A_with_B(self, engine_state: Tuple[Set[Distinction], Set[Tuple[str, str]]], 
-                                     subprocess_A_nodes: Set[str], 
-                                     subprocess_B_nodes: Set[str], 
+    def _evolve_subprocess_A_with_B(self, engine_state: Tuple[Set[Distinction], Set[Tuple[str, str]]],
+                                     subprocess_A_nodes: Set[str],
+                                     subprocess_B_nodes: Set[str],
                                      steps: int) -> Tuple[Set[Distinction], Set[Tuple[str, str]]]:
         """
-        THE "PETRI DISH" FOR FORCES:
-        Evolves a *clone* of a universe by *only* synthesizing
-        nodes from subprocess A with nodes from subprocess B.
+        Execute cross-subprocess synthesis operations.
+
+        Creates engine clone and synthesizes pairs where one member is from
+        subprocess A and the other from subprocess B. Measures interaction
+        dynamics between distinct structural regions.
         """
-        # Create a "clone" of the engine's state
         temp_engine = DistinctionEngine()
         distinctions, relationships = engine_state
         temp_engine.all_distinctions = {d.id: d for d in distinctions}
         temp_engine.relationships = relationships.copy()
-        
-        # Get the Distinction objects for our subprocesses
+
         distinctions_A = [d for d in temp_engine.all_distinctions.values()
                           if d.id in subprocess_A_nodes]
         distinctions_B = [d for d in temp_engine.all_distinctions.values()
                           if d.id in subprocess_B_nodes]
-        
+
         if not distinctions_A or not distinctions_B:
-            return temp_engine.get_state_snapshot() # Nothing to interact with
+            return temp_engine.get_state_snapshot()
 
         for _ in range(steps):
-            # 1. Pick one distinction from *each* subprocess
             a = random.choice(distinctions_A)
             b = random.choice(distinctions_B)
-            
-            # 2. Run the synthesis. This mutates temp_engine
             c = temp_engine.synthesize(a, b)
-            
-            # 3. Add the *new* distinction to *neither* list
-            #    We are only modeling the interaction between the
-            #    original two subsystems.
-        
-        # Return the final state of the *entire cloned universe*
-        return temp_engine.get_state_snapshot()
 
-    # --- FOUNDATIONAL TEST 13: EMERGENT FORCES ---
+        return temp_engine.get_state_snapshot()
 
     def test_falsify_emergent_forces(self):
         """
-        FALSIFICATION TEST 13: The "Emergent Force" Test
-        
-        Hypothesis: The "integration rule" (dynamic) between two
-        different subprocesses (e.g., "clump" vs "chain") is
-        a non-trivial, measurable "force."
-        
-        Falsification: All interactions are "dumb" and
-        do not change the relationship between the subprocesses.
+        Falsification Test: Interaction Neutrality
+
+        Hypothesis: Cross-subprocess synthesis produces measurable change
+        in topological distance between subprocess centers, indicating
+        directional interaction dynamics (attractive or repulsive forces).
+
+        Falsifies if: Interaction produces no distance change, proving
+        cross-subprocess synthesis lacks directional dynamics.
+
+        Measurement:
+        - Shortest path distance between subprocess centers before and after interaction
         """
-        print("\n💥 ATTACKING 'FORCES': Are interactions just 'dumb' integration?")
-        
-        # 1. Evolve the universe to create a complex substrate
-        print("   Evolving universe locally for 5000 steps...")
+        print("\nTest: Emergent Forces Falsification")
+
+        print("   Executing 5000 synthesis operations...")
         self._evolve_universe_locally(steps=5000)
-        
-        # 2. Get the initial state and measure everything
+
         state_0 = self.engine.get_state_snapshot()
         g_0 = self._build_graph_from_snapshot(state_0)
-        
+
         if g_0.number_of_nodes() < 200:
             self.fail("Graph too small to test.")
-            
-        # 3. Find our two "subprocesses"
+
         all_distinctions = list(state_0[0])
         sample_nodes = random.sample(all_distinctions, 2)
-        
+
         subprocess_A_nodes = self._get_local_subprocess(g_0, sample_nodes[0].id)
         subprocess_B_nodes = self._get_local_subprocess(g_0, sample_nodes[1].id)
-        
-        # Ensure they are non-overlapping
+
         while not subprocess_A_nodes.isdisjoint(subprocess_B_nodes):
             sample_nodes = random.sample(all_distinctions, 2)
             subprocess_A_nodes = self._get_local_subprocess(g_0, sample_nodes[0].id)
             subprocess_B_nodes = self._get_local_subprocess(g_0, sample_nodes[1].id)
 
-        print(f"   ...Found two distinct subprocesses (A: {len(subprocess_A_nodes)} nodes, B: {len(subprocess_B_nodes)} nodes).")
+        print(f"   Found two distinct subprocesses (A: {len(subprocess_A_nodes)} nodes, B: {len(subprocess_B_nodes)} nodes).")
 
-        # 4. "Measure" the Initial "Space" Between Them
         try:
             distance_0 = nx.shortest_path_length(g_0, source=sample_nodes[0].id, target=sample_nodes[1].id)
         except nx.NetworkXNoPath:
             self.fail("Could not run test: Subprocesses are in disconnected graph components.")
 
-        # 5. Run the "Force" Experiment (Petri Dish)
-        print(f"   ...Forcing {len(subprocess_A_nodes)} nodes in A to interact with {len(subprocess_B_nodes)} nodes in B...")
+        print(f"   Executing cross-subprocess synthesis (100 steps)...")
         state_1 = self._evolve_subprocess_A_with_B(state_0, subprocess_A_nodes, subprocess_B_nodes, steps=100)
 
-        # 6. The Measurement: Get the *final* state
         g_1 = self._build_graph_from_snapshot(state_1)
 
-        # Measure the *final* "space" between their original centers
         try:
             distance_1 = nx.shortest_path_length(g_1, source=sample_nodes[0].id, target=sample_nodes[1].id)
         except nx.NetworkXNoPath:
-            # This is a valid outcome! It means the interaction
-            # "destroyed" one of the nodes (e.g., if our impl
-            # consumed/replaced them). We'll treat this as a large change.
-            distance_1 = distance_0 + 100 # A very large, "repulsive" change
+            distance_1 = distance_0 + 100
         except nx.NodeNotFound:
-            # This can happen if our original nodes are no longer in the graph
-            # In our current impl, this is not the case, but it's good to check.
             self.fail("Test logic error: Original nodes were removed.")
 
-        # 7. The Analysis:
         delta_distance = distance_1 - distance_0
-        
-        print(f"\n   --- Emergent Force Test Results ---")
-        print(f"   Initial 'Space' between subprocesses: {distance_0} steps")
-        print(f"   Final 'Space' between subprocesses:   {distance_1} steps")
-        print(f"   Interaction Dynamic (Δ_distance): {delta_distance:+.0f} steps")
 
-        # 8. The Falsification:
-        #    If the interaction is "dumb" or "neutral," the
-        #    distance between the centers will not change.
-        
+        print(f"\n   Results:")
+        print(f"   Initial distance: {distance_0} steps")
+        print(f"   Final distance: {distance_1} steps")
+        print(f"   Distance change: {delta_distance:+.0f} steps")
+
         self.assertNotEqual(delta_distance, 0,
-                         "🚩 FALSIFIED: The interaction was 'neutral.' No 'force' was detected."
-                         " The distance between subprocesses did not change.")
-        
-        print(f"\n   ✅ THEORY VALIDATED: A non-neutral 'force' was detected.")
+                         "FALSIFIED: Interaction produced no distance change. No directional dynamic detected.")
+
+        print(f"\n   Hypothesis sustained.")
         if delta_distance < 0:
-            print(f"      The dynamic is 'ATTRACTIVE' (distance decreased by {abs(delta_distance)}).")
+            print(f"   Attractive dynamic detected (distance decreased by {abs(delta_distance)}).")
         else:
-            print(f"      The dynamic is 'REPULSIVE' (distance increased by {delta_distance}).")
+            print(f"   Repulsive dynamic detected (distance increased by {delta_distance}).")
 
 if __name__ == '__main__':
     unittest.main()
