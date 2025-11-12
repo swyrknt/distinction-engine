@@ -15,13 +15,13 @@ source venv/bin/activate  # or .\venv\Scripts\activate on Windows
 ### Making Changes
 
 1. Create a new branch for your work:
-   - `feature/feature-name` for new functionality
-   - `test/hypothesis-name` for new tests
+   - `test/hypothesis-name` for new research tests
+   - `experiment/experiment-name` for application demonstrations
    - `fix/issue-description` for bug fixes
 
 2. Follow the project's commenting standards (see `COMMENTING_STANDARD.md`)
 
-3. Add tests for any new functionality in the `tests/` directory
+3. New theoretical claims should be validated through tests in the `tests/` directory. Practical applications demonstrating validated properties belong in `experiments/`
 
 ### Before Pushing
 
@@ -42,7 +42,9 @@ This runs the same checks used by GitHub Actions for pull request validation.
 
 ## Guidelines
 
-**Testing**: All contributions must pass the automated test suite. Add tests for new functionality.
+**Testing**: All contributions must pass the automated test suite. Add tests for theoretical claims.
+
+**Experiments**: Demonstrations should illustrate practical applications of validated engine properties. Experiments demonstrate what can be built using the engine, tests validate the engine's fundamental properties.
 
 **Core Engine**: Modifications to `engine/distinction.py` require rigorous justification and validation.
 
@@ -50,7 +52,7 @@ This runs the same checks used by GitHub Actions for pull request validation.
 
 **Testing Standards**: Follow falsification methodology defined in `TESTING_STANDARD.md`. Design tests to attack hypotheses, not validate them.
 
-**Scope**: Keep pull requests focused on a single feature or fix.
+**Scope**: Keep pull requests focused on a single test, experiment, or fix.
 
 ## Writing New Tests
 
@@ -67,6 +69,21 @@ Structure your test to include:
 2. Specific falsification condition
 3. Measurement methodology
 4. Professional output reporting
+
+## Writing Experiments
+
+Experiments demonstrate practical applications built on validated engine properties. Use `experiments/translation_demo.py` as a reference. Experiments should:
+
+- Demonstrate a concrete application of engine properties validated by tests
+- Follow the same commenting standards (see `COMMENTING_STANDARD.md`)
+- Use professional, concise output without emojis or dramatic formatting
+- Include module-level docstrings explaining what property is being demonstrated
+- Provide clear, matter-of-fact result reporting
+- Be executable standalone with `python experiments/experiment_name.py`
+
+Experiments differ from tests:
+- **Tests** falsify theoretical claims about the engine itself
+- **Experiments** demonstrate what can be built using validated engine properties
 
 ## Running Tests
 
