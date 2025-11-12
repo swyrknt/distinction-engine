@@ -1,0 +1,25 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+
+# IDE / Editor settings (Optional but recommended)
+.vscode/
+.idea/
+.DS_Store
+
+.html
+
+# local files
+*.local
+*-local/
